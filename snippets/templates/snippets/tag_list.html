@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Tags - CodeVault{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-tags me-2"></i>All Tags
+            </h2>
+            <div>
+                <a href="{% url 'snippets:tag_create' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-2"></i>Create Tag
+                </a>
+                <a href="{% url 'snippets:snippet_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Snippets
+                </a>
+            </div>
+        </div>
+        
+        {% if tags %}
+        <div class="row">
+            {% for tag in tags %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">
+                                <a href="{% url 'snippets:tag_detail' tag.pk %}" class="text-decoration-none">
+                                    <span class="badge bg-primary" style="background-color: {{ tag.color }} !important;">
+                                        {{ tag.name }}
+                                    </span>
+                                </a>
+                            </h5>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-code me-1"></i>
+                                {{ tag.snippet_count }} snippet{{ tag.snippet_count|pluralize }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'snippets:tag_detail' tag.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-eye me-1"></i>View Snippets
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No tags found</h4>
+            <p class="text-muted">Tags will appear here once snippets are created with tags.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

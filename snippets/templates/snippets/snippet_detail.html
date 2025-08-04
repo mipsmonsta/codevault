@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ snippet.title }} - CodeVault{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Snippet Header -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="h2">{{ snippet.title }}</h1>
+                <div class="d-flex align-items-center gap-3 text-muted">
+                    <span>
+                        <i class="fas fa-user me-1"></i>{{ snippet.author.username }}
+                    </span>
+                    <span>
+                        <i class="fas fa-clock me-1"></i>{{ snippet.updated_at|date:"M d, Y H:i" }}
+                    </span>
+                    <span class="badge bg-secondary">{{ snippet.get_language_display }}</span>
+                    {% if not snippet.is_public %}
+                    <span class="badge bg-warning">Private</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="btn-group" role="group">
+                {% if user == snippet.author %}
+                <a href="{% url 'snippets:snippet_update' snippet.pk %}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i>Edit
+                </a>
+                <a href="{% url 'snippets:snippet_delete' snippet.pk %}" class="btn btn-outline-danger">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </a>
+                {% endif %}
+                <a href="{% url 'snippets:export_markdown' snippet.pk %}" class="btn btn-outline-success">
+                    <i class="fas fa-download me-1"></i>Export
+                </a>
+            </div>
+        </div>
+        
+        <!-- Tags -->
+        {% if snippet.tags.exists %}
+        <div class="mb-4">
+            <h6 class="text-muted mb-2">
+                <i class="fas fa-tags me-1"></i>Tags
+            </h6>
+            <div class="d-flex flex-wrap gap-2">
+                {% for tag in snippet.tags.all %}
+                <a href="{% url 'snippets:tag_detail' tag.pk %}" class="text-decoration-none">
+                    <span class="badge" style="background-color: {{ tag.color }} !important; color: white; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                        <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Code Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-code me-2"></i>Code
+                </h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard()">
+                    <i class="fas fa-copy me-1"></i>Copy
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <pre class="mb-0"><code class="language-{{ snippet.language }}" id="codeBlock">{{ snippet.code }}</code></pre>
+            </div>
+        </div>
+        
+        <!-- Notes Section -->
+        {% if snippet.notes %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sticky-note me-2"></i>Notes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="notes-content">
+                    {{ snippet.notes|linebreaks }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Snippet Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Snippet Info
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <strong>Language:</strong> {{ snippet.get_language_display }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Created:</strong> {{ snippet.created_at|date:"M d, Y H:i" }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Updated:</strong> {{ snippet.updated_at|date:"M d, Y H:i" }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Author:</strong> {{ snippet.author.username }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Visibility:</strong> 
+                        {% if snippet.is_public %}
+                        <span class="badge bg-success">Public</span>
+                        {% else %}
+                        <span class="badge bg-warning">Private</span>
+                        {% endif %}
+                    </li>
+                    {% if snippet.tags.exists %}
+                    <li class="mb-2">
+                        <strong>Tags:</strong>
+                        <div class="mt-1">
+                            {% for tag in snippet.tags.all %}
+                            <a href="{% url 'snippets:tag_detail' tag.pk %}" class="text-decoration-none">
+                                <span class="badge me-1" style="background-color: {{ tag.color }} !important; color: white; font-size: 0.75rem;">
+                                    {{ tag.name }}
+                                </span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'snippets:export_markdown' snippet.pk %}" class="btn btn-success">
+                        <i class="fas fa-download me-2"></i>Export as Markdown
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                        <i class="fas fa-copy me-2"></i>Copy Code
+                    </button>
+                    {% if user == snippet.author %}
+                    <a href="{% url 'snippets:snippet_update' snippet.pk %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Snippet
+                    </a>
+                    <a href="{% url 'snippets:snippet_delete' snippet.pk %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Snippet
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Back to List -->
+<div class="mt-4">
+    <a href="{% url 'snippets:snippet_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to All Snippets
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyToClipboard() {
+    const codeBlock = document.getElementById('codeBlock');
+    const textArea = document.createElement('textarea');
+    textArea.value = codeBlock.textContent;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    // Show feedback
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check me-1"></i>Copied!';
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-success');
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>
+{% endblock %} 

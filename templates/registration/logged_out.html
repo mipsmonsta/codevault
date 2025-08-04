@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Logged Out - CodeVault{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center mb-0">
+                        <i class="fas fa-sign-out-alt"></i> Logged Out
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    
+                    <h4 class="mb-3">Successfully Logged Out</h4>
+                    
+                    <p class="text-muted mb-4">
+                        You have been successfully logged out of your account. 
+                        Thank you for using CodeVault!
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Login Again
+                        </a>
+                        <a href="{% url 'snippets:snippet_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home"></i> Go to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

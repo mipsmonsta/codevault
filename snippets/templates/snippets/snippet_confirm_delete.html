@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Snippet - CodeVault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Snippet
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                
+                <h5>Are you sure you want to delete "{{ object.title }}"?</h5>
+                
+                <div class="mt-3">
+                    <p class="text-muted">
+                        <strong>Language:</strong> {{ object.get_language_display }}<br>
+                        <strong>Created:</strong> {{ object.created_at|date:"M d, Y H:i" }}<br>
+                        <strong>Tags:</strong> 
+                        {% if object.tags.exists %}
+                            {% for tag in object.tags.all %}
+                                <span class="badge me-1" style="background-color: {{ tag.color }}; color: white;">{{ tag.name }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">No tags</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="mt-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'snippets:snippet_detail' object.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Delete Snippet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}All Snippets - CodeVault{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-lg-3 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>Filters
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{% url 'snippets:snippet_list' %}">
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               value="{{ search_query }}" placeholder="Search snippets...">
+                    </div>
+                    
+                    <!-- Language Filter -->
+                    <div class="mb-3">
+                        <label for="language" class="form-label">Language</label>
+                        <select class="form-select" id="language" name="language">
+                            <option value="">All Languages</option>
+                            {% for code, name in languages %}
+                            <option value="{{ code }}" {% if selected_language == code %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Tag Filter -->
+                    <div class="mb-3">
+                        <label for="tag" class="form-label">Tag</label>
+                        <select class="form-select" id="tag" name="tag">
+                            <option value="">All Tags</option>
+                            {% for tag in tags %}
+                            <option value="{{ tag.id }}" {% if selected_tag == tag.id|stringformat:"s" %}selected{% endif %}>
+                                {{ tag.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <!-- Clear Filters -->
+                <a href="{% url 'snippets:snippet_list' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Snippets Grid -->
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-code me-2"></i>Code Snippets
+                {% if search_query or selected_language or selected_tag %}
+                <small class="text-muted">(Filtered Results)</small>
+                {% endif %}
+            </h2>
+            {% if user.is_authenticated %}
+            <a href="{% url 'snippets:snippet_create' %}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>New Snippet
+            </a>
+            {% endif %}
+        </div>
+        
+        {% if snippets %}
+        <div class="row">
+            {% for snippet in snippets %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card snippet-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">
+                                <a href="{% url 'snippets:snippet_detail' snippet.pk %}" class="text-decoration-none">
+                                    {{ snippet.title|truncatechars:30 }}
+                                </a>
+                            </h5>
+                            <span class="badge bg-secondary language-badge">{{ snippet.get_language_display }}</span>
+                        </div>
+                        
+                        <p class="card-text text-muted small">
+                            {{ snippet.code|truncatechars:100 }}
+                        </p>
+                        
+                        {% if snippet.tags.exists %}
+                        <div class="mb-2">
+                            {% for tag in snippet.tags.all %}
+                            <a href="{% url 'snippets:tag_detail' tag.pk %}" class="text-decoration-none">
+                                <span class="badge tag-badge me-1" style="background-color: {{ tag.color }}; color: white;">{{ tag.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>{{ snippet.author.username }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>{{ snippet.updated_at|date:"M d, Y" }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{% url 'snippets:snippet_detail' snippet.pk %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                            {% if user == snippet.author %}
+                            <a href="{% url 'snippets:snippet_update' snippet.pk %}" 
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Snippets pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_language %}&language={{ selected_language }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_language %}&language={{ selected_language }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_language %}&language={{ selected_language }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_language %}&language={{ selected_language }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-code fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No snippets found</h4>
+            <p class="text-muted">
+                {% if search_query or selected_language or selected_tag %}
+                Try adjusting your filters or search terms.
+                {% else %}
+                No code snippets have been created yet.
+                {% endif %}
+            </p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'snippets:snippet_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Your First Snippet
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
