@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from calendar import c
 from pathlib import Path
+from .cockroach import cockroach_db, cockroach_host, cockroach_key, cockroach_port, cockroach_user
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -73,11 +75,28 @@ WSGI_APPLICATION = 'codevault_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+# Modify to work with cockroachdb
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django_cockroachdb',
+        'NAME': cockroach_db,
+        'USER': cockroach_user,
+        'PASSWORD': cockroach_key,
+        'HOST': cockroach_host,
+        'PORT': cockroach_port,
+        'OPTIONS': {
+            'sslmode': 'verify-full',
+            'sslrootcert': BASE_DIR / 'cert' / 'root.crt',
+        },
+    },
 }
 
 

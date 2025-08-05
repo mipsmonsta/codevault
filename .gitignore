@@ -155,3 +155,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp 
+
+# db credential and root certificate
+cockroach.py
+cert/
