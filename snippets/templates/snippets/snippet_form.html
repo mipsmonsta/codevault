@@ -174,7 +174,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="createTagForm" method="post" action="{% url 'snippets:tag_create' %}">
+            <form id="createTagForm" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const createTagForm = document.getElementById('createTagForm');
     if (createTagForm) {
         createTagForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevent the default form submission
             
             const formData = new FormData(this);
             const submitButton = this.querySelector('button[type="submit"]');
@@ -227,11 +227,12 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
             submitButton.disabled = true;
             
-            fetch(this.action, {
+            fetch('{% url "snippets:tag_create" %}', {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
             .then(response => response.json())
