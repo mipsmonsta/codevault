@@ -95,6 +95,7 @@ DATABASES = {
         'OPTIONS': {
             'sslmode': 'verify-full',
             'sslrootcert': BASE_DIR / 'cert' / 'root.crt',
+            'options': '-c search_path=snippets_app',
         },
     },
 }
