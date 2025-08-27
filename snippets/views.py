@@ -199,7 +199,7 @@ class TagCreateView(LoginRequiredMixin, CreateView):
             return JsonResponse({
                 'success': True,
                 'tag': {
-                    'id': tag.id,
+                    'id': str(tag.id),
                     'name': tag.name,
                     'color': tag.color
                 }

@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Add new tag to the dropdown
                     const tagsSelect = document.getElementById('{{ form.tags.id_for_label }}');
                     if (tagsSelect) {
-                        const option = new Option(data.tag.name, data.tag.id, false, true);
+                        const option = new Option(data.tag.name, String(data.tag.id), false, true);
                         tagsSelect.add(option);
                     }
                     
