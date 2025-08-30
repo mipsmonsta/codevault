@@ -185,6 +185,14 @@ def tag_list(request):
     return render(request, 'snippets/tag_list.html', {'tags': tags})
 
 
+def tag_cloud(request):
+    tags = Tag.objects.annotate(
+        snippet_count=Count('snippet')
+    )
+    data = [{"name":tag.name, "count":tag.snippet_count} 
+            for tag in tags]
+    return render(request, 'snippets/tag_cloud.html', {'data': data})
+
 class TagCreateView(LoginRequiredMixin, CreateView):
     model = Tag
     form_class = TagForm

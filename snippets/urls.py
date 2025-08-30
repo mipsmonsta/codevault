@@ -20,4 +20,7 @@ urlpatterns = [
     path('tags/', views.tag_list, name='tag_list'),
     path('tags/create/', views.TagCreateView.as_view(), name='tag_create'),
     path('tags/<int:pk>/', views.TagDetailView.as_view(), name='tag_detail'),
+
+    # Tags cloud views
+    path('tags/cloud/', views.tag_cloud, name='tag_cloud'),
 ] 
