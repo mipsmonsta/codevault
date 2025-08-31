@@ -14,10 +14,18 @@
 
 <script>
     const data = JSON.parse(document.getElementById('data').textContent);
+    
+    // For responsive width (offsetWidth includes padding, content, scrollbar and 
+    // borders)
+    const width = document.getElementById("wordCloud").offsetWidth; 
+    const height = 400;
 
     const layout = d3.layout.cloud()
-    .size([600, 400])
-    .words(data.map(tag => ({text:tag.name, size: 10 + tag.count * 5})))
+    .size([width, height])
+    .words(data.map(tag => ({text:tag.name, 
+        count: tag.count,
+        size: 10 + tag.count * 5, 
+        id:tag.id})))
     .padding(5)
     .rotate(() => 0)
     .font("Impact")
@@ -27,20 +35,28 @@
     layout.start();
 
     function draw(words) {
-        d3.select("#wordCloud").append("svg")
+        const svg = d3.select("#wordCloud").append("svg")
         .attr("width", layout.size()[0])
         .attr("height", layout.size()[1])
         .append("g")
-        .attr("transform", "translate(" + layout.size()[0]/2 + "," + layout.size()[1]/2 + ")")
-        .selectAll("text")
+        .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")");
+
+        const links = svg.selectAll("a")
         .data(words)
-        .enter().append("text")
+        .enter()
+        .append("a")
+        .attr("xlink:href", d => `/tags/${encodeURIComponent(d.id)}/`) // ✅ dynamic URL
+        .style("cursor", "pointer");
+
+        links.append("text")
         .style("font-size", d => d.size + "px")
         .style("font-family", "Impact")
         .style("fill", (d, i) => d3.schemeCategory10[i % 10])
         .attr("text-anchor", "middle")
         .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
-        .text(d => d.text);
+        .text(d => d.text)
+        .append("title") // ✅ tooltip inside text element
+        .text(d => `${d.text} (snippets: ${d.count})`);
     }
 </script>
         
