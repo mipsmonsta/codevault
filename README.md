@@ -96,6 +96,8 @@ A Django web application for creating, managing, and sharing code snippets with 
    python manage.py runserver
    ```
 
+   or use the runserver.bat in Windows
+
 8. **Access the application**
    - Main application: http://127.0.0.1:8000/
    - Admin interface: http://127.0.0.1:8000/admin/
