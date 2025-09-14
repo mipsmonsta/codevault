@@ -189,7 +189,11 @@ def tag_cloud(request):
     tags = Tag.objects.annotate(
         snippet_count=Count('snippet')
     )
-    data = [{"name":tag.name, "count":tag.snippet_count, "id":str(tag.id)} 
+    data = [
+        {"name":tag.name, 
+        "count":tag.snippet_count, 
+        "id":str(tag.id),
+        "color":tag.color} 
             for tag in tags]
     return render(request, 'snippets/tag_cloud.html', {'data': data})
 

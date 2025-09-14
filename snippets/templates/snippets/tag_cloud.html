@@ -5,11 +5,40 @@
 {% block extra_css %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-cloud/build/d3.layout.cloud.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
 {% if data %}
-<div id="wordCloud" class="col-md-6 mx-auto"></div>
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cloud me-2"></i>Tag Cloud</h5>
+            </div>
+            <div class="card-body">
+                <div id="wordCloud"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Tag Usage Statistics</h5>
+                <small class="text-muted">Click on bars to view tag details</small>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height: 400px;">
+                    <canvas id="tagChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{ data|json_script:"data" }}
 
 <script>
@@ -17,15 +46,18 @@
     
     // For responsive width (offsetWidth includes padding, content, scrollbar and 
     // borders)
-    const width = document.getElementById("wordCloud").offsetWidth; 
-    const height = 400;
+    const container = document.getElementById("wordCloud");
+    const width = container.offsetWidth; 
+    const height = 300;
 
     const layout = d3.layout.cloud()
     .size([width, height])
     .words(data.map(tag => ({text:tag.name, 
         count: tag.count,
         size: 10 + tag.count * 5, 
-        id:tag.id})))
+        id:tag.id,
+        color:tag.color}))
+    )
     .padding(5)
     .rotate(() => 0)
     .font("Impact")
@@ -33,13 +65,44 @@
     .on("end", draw);
 
     layout.start();
+    
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            const newWidth = container.offsetWidth;
+            if (newWidth !== width) {
+                // Recreate layout with new width
+                const newLayout = d3.layout.cloud()
+                    .size([newWidth, height])
+                    .words(data.map(tag => ({text:tag.name, 
+                        count: tag.count,
+                        size: 10 + tag.count * 5, 
+                        id:tag.id,
+                        color:tag.color})))
+                    .padding(5)
+                    .rotate(() => 0)
+                    .font("Impact")
+                    .fontSize(d => d.size)
+                    .on("end", draw);
+                
+                newLayout.start();
+            }
+        }, 250); // Debounce resize events
+    });
 
     function draw(words) {
+        // Clear any existing SVG
+        d3.select("#wordCloud").selectAll("svg").remove();
+        
         const svg = d3.select("#wordCloud").append("svg")
-        .attr("width", layout.size()[0])
-        .attr("height", layout.size()[1])
+        .attr("width", "100%")
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet")
         .append("g")
-        .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")");
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
         const links = svg.selectAll("a")
         .data(words)
@@ -51,13 +114,113 @@
         links.append("text")
         .style("font-size", d => d.size + "px")
         .style("font-family", "Impact")
-        .style("fill", (d, i) => d3.schemeCategory10[i % 10])
+        .style("fill", d => d.color)
         .attr("text-anchor", "middle")
         .attr("transform", d => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
         .text(d => d.text)
         .append("title") // ✅ tooltip inside text element
         .text(d => `${d.text} (snippets: ${d.count})`);
     }
+
+    // Create animated bar chart
+    function createBarChart() {
+        // Sort data by count in ascending order
+        const sortedData = [...data].sort((a, b) => a.count - b.count);
+        
+        const ctx = document.getElementById('tagChart').getContext('2d');
+        
+        // Use the colors from the data (same as tag cloud)
+        const colors = sortedData.map(tag => tag.color);
+        
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sortedData.map(tag => tag.name),
+                datasets: [{
+                    label: 'Number of Snippets',
+                    data: sortedData.map(tag => tag.count),
+                    backgroundColor: colors,
+                    borderColor: colors,
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Horizontal bars
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#fff',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.x} snippet${context.parsed.x !== 1 ? 's' : ''}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            color: '#666'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart',
+                    delay: (context) => {
+                        let delay = 0;
+                        if (context.type === 'data' && context.mode === 'default') {
+                            delay = context.dataIndex * 100; // Staggered animation
+                        }
+                        return delay;
+                    }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const tagId = sortedData[index].id;
+                        window.location.href = `/tags/${tagId}/`;
+                    }
+                },
+                onHover: (event, elements) => {
+                    event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                }
+            }
+        });
+        
+        return chart;
+    }
+    
+    // Initialize chart after DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        createBarChart();
+    });
 </script>
         
         
