@@ -32,7 +32,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-vk+x8y4!or1w)f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+raspberryHost = os.environ.get('CURRENT_HOST', 'raspberrypi.local')
+ALLOWED_HOSTS = [raspberryHost, '127.0.0.1']
 
 
 # Application definition
