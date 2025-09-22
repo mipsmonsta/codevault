@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from calendar import c
 from pathlib import Path
 from .cockroach import cockroach_db, cockroach_host, cockroach_key, cockroach_port, cockroach_user
+import os
+from dotenv import load_dotenv
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vk+x8y4!or1w)f5w@$2p@*joe-rnwzsm71(9^-&f*wmxpf+rq%'
+env_path = load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv(env_path)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-vk+x8y4!or1w)f5w@$2p@*joe-rnwzsm71(9^-&f*wmxpf+rq%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
