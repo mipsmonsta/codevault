@@ -33,7 +33,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-vk+x8y4!or1w)f
 DEBUG = True
 
 raspberryHost = os.environ.get('CURRENT_HOST', 'raspberrypi.local')
-ALLOWED_HOSTS = [raspberryHost, '127.0.0.1']
+ALLOWED_HOSTS = [raspberryHost, '127.0.0.1', '192.168.1.115', 'localhost',\
+	'codevault.local']
 
 
 # Application definition
@@ -142,6 +143,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
