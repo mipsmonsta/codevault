@@ -75,10 +75,12 @@ class SnippetDetailView(DetailView):
     context_object_name = 'snippet'
     
     def get_queryset(self):
-        # Allow viewing public snippets or user's own snippets
-        return Snippet.objects.filter(
-            Q(is_public=True) | Q(author=self.request.user)
-        )
+        # Allow viewing public snippets, and if authenticated, also user's own snippets
+        if self.request.user.is_authenticated:
+            return Snippet.objects.filter(
+                Q(is_public=True) | Q(author=self.request.user)
+            )
+        return Snippet.objects.filter(is_public=True)
 
 
 class SnippetCreateView(LoginRequiredMixin, CreateView):
